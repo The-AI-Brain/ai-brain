@@ -8,13 +8,13 @@ To install the program, follow these steps:
 
 Clone the repository:
 
-bash```
+```
 git clone https://github.com/yourusername/ai-brain-project.git
 ```
 
 Install the required Python packages:
 
-bash```
+```
 pip install -r requirements.txt
 ```
 
@@ -22,7 +22,7 @@ Set up your OpenAI API key and name using the OpenAI Secret Manager. See the sec
 
 Run the program:
 
-bash```
+```
 python main.py
 ```
 
@@ -43,19 +43,19 @@ Click "Generate new API key" to create a new API key.
 
 Install the openai_secret_manager Python package:
 
-bash```
+```
 pip install openai_secret_manager
 ```
 
 Import the openai_secret_manager module in your Python code:
 
-python```
+```
 import openai_secret_manager
 ```
 
 Use the openai_secret_manager.get_secret function to retrieve your API key and name (already in the code):
 
-python```
+```
 secrets = openai_secret_manager.get_secret("my_app_name")
 openai.api_key = secrets["api_key"]
 name = secrets["name"]
