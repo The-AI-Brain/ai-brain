@@ -1,6 +1,6 @@
 # The AI Brain Project
 
-The AI Brain Project is a Python program that demonstrates how to use OpenAI's GPT-3 language model to generate human-like text based on user input. The program asks the user for a name and generates random actions every 5 seconds, along with a random sentence using the GPT-3 model. The program also allows the user to load custom context from a file.
+The AI Brain Project is a Python program that demonstrates how to use OpenAI's GPT-3 language model to upload your brain to the cloud. The program asks the user for a name and generates random actions every 5 seconds, along with a random sentence using the GPT-3 model based on certain context. The program also allows the user to load custom context from a file.
 
 ## Installation
 
@@ -8,15 +8,13 @@ To install the program, follow these steps:
 
 Clone the repository:
 
-bash
-```
+bash```
 git clone https://github.com/yourusername/ai-brain-project.git
 ```
 
 Install the required Python packages:
 
-bash
-```
+bash```
 pip install -r requirements.txt
 ```
 
@@ -24,8 +22,7 @@ Set up your OpenAI API key and name using the OpenAI Secret Manager. See the sec
 
 Run the program:
 
-bash
-```
+bash```
 python main.py
 ```
 
@@ -46,22 +43,19 @@ Click "Generate new API key" to create a new API key.
 
 Install the openai_secret_manager Python package:
 
-bash
-```
+bash```
 pip install openai_secret_manager
 ```
 
 Import the openai_secret_manager module in your Python code:
 
-python
-```
+python```
 import openai_secret_manager
 ```
 
 Use the openai_secret_manager.get_secret function to retrieve your API key and name (already in the code):
 
-python
-```
+python```
 secrets = openai_secret_manager.get_secret("my_app_name")
 openai.api_key = secrets["api_key"]
 name = secrets["name"]
@@ -76,3 +70,8 @@ Save the secret in the OpenAI Secret Manager.
 ## License
 
 The AI Brain Project is licensed under the MIT License. See the LICENSE file for more information.
+
+## Possible future impementations (for people who would like to contrib!)
+
+* An semi-decentralized API for the AI using GUN-DB?
+* A ROBLOX Metaverse based on the API?
