@@ -8,6 +8,8 @@ import subprocess
 import datetime
 import sys
 
+compEmote = ""
+
 # Define URLs for requirements.txt and main.py
 REQS_URL = 'https://raw.githubusercontent.com/The-AI-Brain/ai-brain/main/requirements.txt'
 MAIN_URL = 'https://raw.githubusercontent.com/The-AI-Brain/ai-brain/main/main.py'
@@ -24,8 +26,8 @@ with open("custom-context.txt", "r") as f:
 context: List[str] = []
 if context_str:
     context = context_str.split("\n")
-if len(context) < 6:
-    context += [""] * (6 - len(context))
+if len(context) < 9:
+    context += [""] * (9 - len(context))
 
 # Check for updates
 def check_updates():
@@ -56,6 +58,41 @@ secrets = openai_secret_manager.get_secret("openai")
 openai.api_key = secrets["api_key"]
 max_year = datetime.datetime.now().year
 year = min(int(secrets["year"]), max_year)
+
+emotions = [
+    "happy", "sad", "angry", "surprised", "disgusted", "fearful",
+    "excited", "nostalgic", "hopeful", "anxious", "relaxed", "curious",
+    "confused", "amused", "bored", "ecstatic", "exhausted", "grateful",
+    "guilty", "embarrassed", "envious", "proud", "ashamed", "content",
+    "depressed", "fascinated", "frustrated", "inspired", "irritated",
+    "jealous", "lonely", "melancholic", "optimistic", "overwhelmed",
+    "peaceful", "playful", "reflective", "remorseful", "restless",
+    "satisfied", "sympathetic", "tense", "terrified", "triumphant",
+    "uncomfortable", "vulnerable", "wistful", "yearning", "zealous"
+]
+
+actionsEmote = [
+    "dancing", "singing", "laughing", "crying", "smiling", "frowning",
+    "jumping", "running", "walking", "writing", "drawing", "painting",
+    "playing", "reading", "cooking", "eating", "sleeping", "dreaming",
+    "working", "learning", "teaching", "helping", "listening", "talking",
+    "watching", "observing", "meditating", "praying", "driving", "riding",
+    "flying", "swimming", "diving", "hiking", "camping", "travelling",
+    "exploring", "adventuring", "competing", "collaborating", "creating",
+    "designing", "programming", "testing", "debugging", "fixing", "building",
+    "repairing", "upgrading", "maintaining", "cleaning", "organizing"
+]
+
+async def printEmote():
+    while True:
+        emote = random.choice(emotions)
+        action = random.choice(actionsEmote)
+        compEmote = f"I feel {emote} when {action}."
+        context = context + compEmote
+        print(compEmote)
+        await asyncio.sleep(7)
+
+asyncio.run(printEmote())
 
 # Array of human actions
 actions = [
@@ -285,7 +322,7 @@ async def main():
         
         # Append GPT-3 response to context
         context.append(f"{name}: {message}")
-        context = context[-6:]
+        context = context[-9:]
         
         # Print GPT-3 response and what it said
         print(f"{name}: {chatin}")
