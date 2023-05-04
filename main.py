@@ -86,9 +86,10 @@ async def printEmote():
         emote = random.choice(emotions)
         action = random.choice(actionsEmote)
         compEmote = f"I feel {emote} when {action}."
-        context = context + compEmote
+        context = context.append(compEmote)
         # print(compEmote) # DEBUGGING
         await asyncio.sleep(7)
+        return compEmote
 
 asyncio.run(printEmote())
 
