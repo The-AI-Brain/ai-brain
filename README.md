@@ -1,6 +1,6 @@
 # The AI Brain Project
 
-The AI Brain Project is a Python program that demonstrates how to use OpenAI's GPT-3 language model to upload your brain to the cloud. The program asks the user for a name and generates random actions every 5 seconds, along with a random sentence using the GPT-3 model based on certain context. The program also allows the user to load custom context from a file.
+The AI Brain Project is a Python program that demonstrates how to use OpenAI's GPT-3 language model to upload your brain to the cloud. The program asks the user for a name and generates random actions every 5 seconds, along with a random sentence using the GPT-3 model based on certain context. The program also allows the user to load custom context from a file. Think of it as [UHLE](https://en.wikipedia.org/wiki/UltraHLE) for [brain emulation/mind uploading](https://en.wikipedia.org/wiki/Mind_uploading).
 
 ## Installation
 
