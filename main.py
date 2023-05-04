@@ -7,6 +7,9 @@ import requests
 import subprocess
 import datetime
 import sys
+from fastapi import FastAPI
+
+app = FastAPI()
 
 compEmote = ""
 extraContext = ""
@@ -55,6 +58,7 @@ def check_updates():
 secrets = openai_secret_manager.get_secret("openai")
 openai.api_key = secrets["api_key"]
 max_year = datetime.datetime.now().year
+name = secrets["name"]
 year = min(int(secrets["year"]), max_year)
 
 emotions = [
@@ -82,14 +86,13 @@ actionsEmote = [
 ]
 
 async def printEmote():
-    while True:
-        emote = random.choice(emotions)
-        action = random.choice(actionsEmote)
-        compEmote = f"I feel {emote} when {action}."
-        context = context.append(compEmote)
-        # print(compEmote) # DEBUGGING
-        await asyncio.sleep(7)
-        return compEmote
+    emote = random.choice(emotions)
+    action = random.choice(actionsEmote)
+    compEmote = f"I feel {emote} when {action}."
+    context = context.append(compEmote)
+    # print(compEmote) # DEBUGGING
+    await asyncio.sleep(7)
+    return compEmote
 
 asyncio.run(printEmote())
 
@@ -261,14 +264,14 @@ places = [
 
 
 # Asynchronous function to print actions every 5 seconds
-async def print_actions(name):
-    while True:
-        action = random.choice(actions)
-        place = random.choice(places)
-        complete = f"{name} {action} {place} in the year {year}"
-        #print(complete) #DEBUG
-        context.append(complete)
-        return complete
+async def print_actions():
+    action = random.choice(actions)
+    place = random.choice(places)
+    complete = f"{name} {action} {place} in the year {year}"
+    #print(complete) #DEBUG
+    context.append(complete)
+    asyncio.sleep(5)
+    return complete
         
 
 
@@ -291,43 +294,52 @@ async def generate_sentence(context):
 
 # Main function to run the program
 async def main():
-    # Get user input for name
-    name = secrets["name"]
-    
     # Start printing actions asynchronously
     asyncio.create_task(print_actions(name))
     
-    # Start generating sentences and interacting with GPT-3 indefinitely
-    while True:
-        check_updates()
-        # Generate random sentence
-        chatin = await generate_sentence(context)
-        
-        # Append sentence to context
-        context.append(f"{name}: {chatin}")
-        context = context[-3:]
+    # Start generating sentences and interacting with GPT-3 indefinitely.
+    check_updates()
+    # Generate random sentence
+    chatin = await generate_sentence(context)
+    
+    # Append sentence to context
+    context.append(f"{name}: {chatin}")
+    context = context[-3:]
         
         # Get response from GPT-3
-        message = await asyncio.to_thread(openai.Completion.create,
-            engine="davinci",
-            prompt=f"Context: {context}\nExtra context: {extraContext}\n{name}: {chatin}\n{name}:",
-            max_tokens=1024,
-            n=1,
-            stop=None,
-            temperature=0.7,
-            frequency_penalty=0,
-            presence_penalty=0,
-            )
-        message = message.choices[0].text.strip()
+    message = await asyncio.to_thread(openai.Completion.create,
+        engine="davinci",
+        prompt=f"Context: {context}\nExtra context: {extraContext}\n{name}: {chatin}\n{name}:",
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=0.7,
+        frequency_penalty=0,
+        presence_penalty=0,
+        )
+    message = message.choices[0].text.strip()
+    
+    # Append GPT-3 response to context
+    context.append(f"{name}: {message}")
+    context = context[-9:]
         
-        # Append GPT-3 response to context
-        context.append(f"{name}: {message}")
-        context = context[-9:]
-        
-        # Print GPT-3 response and what it said
-        print(f"{name}: {chatin}")
-        print(f"{name}: {message}")
+    # Print GPT-3 response and what it said
+    print(f"{name}: {chatin}")
+    print(f"{name}: {message}")
+    
+    asyncio.sleep(4)
+    
+    return f"{name}: {chatin}\n${name}: ${message}"
 
 
 # Run the main function
-asyncio.run(main())
+
+@app.get("/compemote")
+async def get_compemote():
+    return printEmote()
+@app.get("/compemote")
+async def print_actions():
+    return print_actions()
+@app.get("/")
+async def get_main():
+    return main()
