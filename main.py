@@ -2,6 +2,53 @@ import asyncio
 import random
 import openai_secret_manager
 import openai
+import os
+import requests
+import subprocess
+import datetime
+import sys
+
+# Define URLs for requirements.txt and main.py
+REQS_URL = 'https://raw.githubusercontent.com/The-AI-Brain/ai-brain/main/requirements.txt'
+MAIN_URL = 'https://raw.githubusercontent.com/The-AI-Brain/ai-brain/main/main.py'
+
+# Define paths for local requirements.txt and main.py files
+REQS_PATH = 'requirements.txt'
+MAIN_PATH = 'main.py'
+
+# Read context from file
+with open("custom-context.txt", "r") as f:
+    context_str = f.read().strip()
+
+# Initialize context with empty strings if file is empty
+context: List[str] = []
+if context_str:
+    context = context_str.split("\n")
+if len(context) < 6:
+    context += [""] * (6 - len(context))
+
+# Check for updates
+def check_updates():
+    # Download remote requirements.txt file
+    remote_reqs = requests.get(REQS_URL).text
+    
+    # Compare local and remote requirements.txt files
+    with open(REQS_PATH, 'r') as f:
+        local_reqs = f.read()
+        
+    if local_reqs != remote_reqs:
+        # Install updated requirements
+        subprocess.run(['pip', 'install', '-r', REQS_PATH])
+        
+        # Download updated main.py file
+        remote_main = requests.get(MAIN_URL).text
+        
+        # Write updated main.py file
+        with open(MAIN_PATH, 'w') as f:
+            f.write(remote_main)
+        
+        # Restart the script
+        os.execv(sys.argv[0], sys.argv)
 
 
 # Initialize the OpenAI API client
@@ -12,7 +59,7 @@ year = min(int(secrets["year"]), max_year)
 
 # Array of human actions
 actions = [
-        "walked the dog",
+    "walked the dog",
     "cooked dinner",
     "read a book",
     "went swimming",
@@ -117,9 +164,7 @@ actions = [
     "took a class",
     "ate",
     "played the piano",
-    "went for a walk",
-    "read a book",
-    "watched TV"
+    "went for a walk"
 ]
 
 
@@ -184,8 +229,10 @@ async def print_actions(name):
     while True:
         action = random.choice(actions)
         place = random.choice(places)
-        print(f"{name} {action} {place} in the year {year}")
-        await asyncio.sleep(5)
+        complete = f"{name} {action} {place} in the year {year}"
+        print(complete)
+        context.append(complete)
+        
 
 
 # Asynchronous function to generate random sentence
@@ -210,21 +257,12 @@ async def main():
     # Get user input for name
     name = secrets["name"]
     
-    # Read context from file
-    with open("custom-context.txt", "r") as f:
-        context = f.read().strip()
-    
-    # Initialize context with empty strings if file is empty
-    if not context:
-        context = ["", "", ""]
-    else:
-        context = context.split("\n")[-3:]
-    
     # Start printing actions asynchronously
     asyncio.create_task(print_actions(name))
     
     # Start generating sentences and interacting with GPT-3 indefinitely
     while True:
+        check_updates()
         # Generate random sentence
         chatin = await generate_sentence(context)
         
@@ -247,7 +285,7 @@ async def main():
         
         # Append GPT-3 response to context
         context.append(f"{name}: {message}")
-        context = context[-3:]
+        context = context[-6:]
         
         # Print GPT-3 response
         print(f"{name}: {message}")
