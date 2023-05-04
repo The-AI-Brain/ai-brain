@@ -265,7 +265,7 @@ async def print_actions(name):
         action = random.choice(actions)
         place = random.choice(places)
         complete = f"{name} {action} {place} in the year {year}"
-        print(complete)
+        #print(complete) #DEBUG
         context.append(complete)
         return complete
         
