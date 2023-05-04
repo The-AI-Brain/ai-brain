@@ -287,7 +287,8 @@ async def main():
         context.append(f"{name}: {message}")
         context = context[-6:]
         
-        # Print GPT-3 response
+        # Print GPT-3 response and what it said
+        print(f"{name}: {chatin}")
         print(f"{name}: {message}")
 
 
