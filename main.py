@@ -9,6 +9,7 @@ import datetime
 import sys
 
 compEmote = ""
+extraContext = ""
 
 # Define URLs for requirements.txt and main.py
 REQS_URL = 'https://raw.githubusercontent.com/The-AI-Brain/ai-brain/main/requirements.txt'
@@ -20,14 +21,11 @@ MAIN_PATH = 'main.py'
 
 # Read context from file
 with open("custom-context.txt", "r") as f:
-    context_str = f.read().strip()
+    extraContext = f.read().strip()
 
 # Initialize context with empty strings if file is empty
 context: List[str] = []
-if context_str:
-    context = context_str.split("\n")
-if len(context) < 9:
-    context += [""] * (9 - len(context))
+context += [""] * (9 - len(context))
 
 # Check for updates
 def check_updates():
@@ -89,7 +87,7 @@ async def printEmote():
         action = random.choice(actionsEmote)
         compEmote = f"I feel {emote} when {action}."
         context = context + compEmote
-        print(compEmote)
+        # print(compEmote) # DEBUGGING
         await asyncio.sleep(7)
 
 asyncio.run(printEmote())
@@ -269,12 +267,13 @@ async def print_actions(name):
         complete = f"{name} {action} {place} in the year {year}"
         print(complete)
         context.append(complete)
+        return complete
         
 
 
 # Asynchronous function to generate random sentence
 async def generate_sentence(context):
-    prompt = f"Generate a random sentence with a place for an action:\nContext: {context}\n{name}:"
+    prompt = f"Generate a random sentence with the context:\nContext:{context}\nExtra context:${extraContext}\n{name}:"
     response = await asyncio.to_thread(openai.Completion.create,
         engine="davinci",
         prompt=prompt,
@@ -310,7 +309,7 @@ async def main():
         # Get response from GPT-3
         message = await asyncio.to_thread(openai.Completion.create,
             engine="davinci",
-            prompt=f"Context: {context}\n{name}: {chatin}\n{name}:",
+            prompt=f"Context: {context}\nExtra context: {extraContext}\n{name}: {chatin}\n{name}:",
             max_tokens=1024,
             n=1,
             stop=None,
