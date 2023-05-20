@@ -336,10 +336,12 @@ async def main():
 
 @app.get("/compemote")
 async def get_compemote():
-    return printEmote()
-@app.get("/compemote")
+    return await printEmote()
+
+@app.get("/actions")
 async def print_actions():
-    return print_actions()
+    return await print_actions()
+
 @app.get("/")
 async def get_main():
     return main()
