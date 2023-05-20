@@ -94,7 +94,7 @@ async def printEmote():
     await asyncio.sleep(7)
     return compEmote
 
-asyncio.run(printEmote())
+await asyncio.run(printEmote())
 
 # Array of human actions
 actions = [
@@ -295,7 +295,7 @@ async def generate_sentence(context):
 # Main function to run the program
 async def main():
     # Start printing actions asynchronously
-    asyncio.create_task(print_actions(name))
+    asyncio.create_task(print_actions())
     
     # Start generating sentences and interacting with GPT-3 indefinitely.
     check_updates()
@@ -327,7 +327,7 @@ async def main():
     print(f"{name}: {chatin}")
     print(f"{name}: {message}")
     
-    asyncio.sleep(4)
+    await asyncio.sleep(4)
     
     return f"{name}: {chatin}\n${name}: ${message}"
 
