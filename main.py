@@ -1,15 +1,18 @@
 import asyncio
 import random
-import openai_secret_manager
-import openai
 import os
-import requests
 import subprocess
 import datetime
 import sys
 from fastapi import FastAPI
+from transformers import GPTJForCausalLM, GPTJTokenizer
 
 app = FastAPI()
+
+model_name = "EleutherAI/gpt-j-6B"
+tokenizer = GPTJTokenizer.from_pretrained(model_name)
+model = GPTJForCausalLM.from_pretrained(model_name)
+
 
 compEmote = ""
 extraContext = ""
@@ -55,8 +58,6 @@ def check_updates():
 
 
 # Initialize the OpenAI API client
-secrets = openai_secret_manager.get_secret("openai")
-openai.api_key = secrets["api_key"]
 max_year = datetime.datetime.now().year
 name = secrets["name"]
 year = min(int(secrets["year"]), max_year)
@@ -277,18 +278,10 @@ async def print_actions():
 
 # Asynchronous function to generate random sentence
 async def generate_sentence(context):
-    prompt = f"Generate a random sentence with the context:\nContext:{context}\nExtra context:${extraContext}\n{name}:"
-    response = await asyncio.to_thread(openai.Completion.create,
-        engine="davinci",
-        prompt=prompt,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=0.7,
-        frequency_penalty=0,
-        presence_penalty=0,
-        )
-    message = response.choices[0].text.strip()
+    prompt = f"Generate a random sentence from the context:\nContext:{context}\nExtra context:${extraContext}\n{name}:"
+    inputs = tokenizer.encode(prompt, return_tensors="pt")
+    outputs = model.generate(inputs, max_length=1024, num_return_sequences=1, temperature=0.7)
+    message = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return message
 
 
@@ -299,30 +292,23 @@ async def main():
     
     # Start generating sentences and interacting with GPT-3 indefinitely.
     check_updates()
+    
     # Generate random sentence
     chatin = await generate_sentence(context)
     
     # Append sentence to context
     context.append(f"{name}: {chatin}")
     context = context[-3:]
-        
-        # Get response from GPT-3
-    message = await asyncio.to_thread(openai.Completion.create,
-        engine="davinci",
-        prompt=f"Context: {context}\nExtra context: {extraContext}\n{name}: {chatin}\n{name}:",
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=0.7,
-        frequency_penalty=0,
-        presence_penalty=0,
-        )
-    message = message.choices[0].text.strip()
+    
+    # Get response from GPT-3
+    inputs = tokenizer.encode(f"Context: {context}\nExtra context: {extraContext}\n{name}: {chatin}\n{name}:", return_tensors="pt")
+    outputs = model.generate(inputs, max_length=1024, num_return_sequences=1, temperature=0.7)
+    message = tokenizer.decode(outputs[0], skip_special_tokens=True)
     
     # Append GPT-3 response to context
     context.append(f"{name}: {message}")
     context = context[-9:]
-        
+    
     # Print GPT-3 response and what it said
     print(f"{name}: {chatin}")
     print(f"{name}: {message}")
@@ -330,7 +316,6 @@ async def main():
     await asyncio.sleep(4)
     
     return f"{name}: {chatin}\n${name}: ${message}"
-
 
 # Run the main function
 
@@ -342,6 +327,4 @@ async def get_compemote():
 async def print_actions():
     return await print_actions()
 
-@app.get("/")
-async def get_main():
-    return main()
+main()
