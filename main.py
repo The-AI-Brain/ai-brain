@@ -9,7 +9,7 @@ from transformers import GPTJForCausalLM, GPTJTokenizer
 
 app = FastAPI()
 
-model_name = "EleutherAI/gpt-j-6B"
+model_name = "EleutherAI/gpt-neox-20b"
 tokenizer = GPTJTokenizer.from_pretrained(model_name)
 model = GPTJForCausalLM.from_pretrained(model_name)
 
