@@ -4,15 +4,20 @@ import os
 import subprocess
 import datetime
 import sys
-from fastapi import FastAPI
-from transformers import GPTJForCausalLM, GPTJTokenizer
+from fastapi import FastAPI, Query
+import requests
+
+API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neox-20b"
 
 app = FastAPI()
 
-model_name = "EleutherAI/gpt-neox-20b"
 tokenizer = GPTJTokenizer.from_pretrained(model_name)
 model = GPTJForCausalLM.from_pretrained(model_name)
 
+
+def query(payload):
+	response = requests.post(API_URL, headers=headers, json=payload)
+	return response.json()
 
 compEmote = ""
 extraContext = ""
@@ -279,14 +284,14 @@ async def print_actions():
 # Asynchronous function to generate random sentence
 async def generate_sentence(context):
     prompt = f"Generate a random sentence from the context:\nContext:{context}\nExtra context:${extraContext}\n{name}:"
-    inputs = tokenizer.encode(prompt, return_tensors="pt")
-    outputs = model.generate(inputs, max_length=1024, num_return_sequences=1, temperature=0.7)
-    message = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    message = query({
+	    "inputs": "prompt",
+    })
     return message
 
 
 # Main function to run the program
-async def main():
+async def main(chatin):
     # Start printing actions asynchronously
     asyncio.create_task(print_actions())
     
@@ -294,22 +299,20 @@ async def main():
     check_updates()
     
     # Generate random sentence
-    chatin = await generate_sentence(context)
+    chatin = "Guest:" + chatin
     
     # Append sentence to context
     context.append(f"{name}: {chatin}")
     context = context[-3:]
     
-    # Get response from GPT-3
-    inputs = tokenizer.encode(f"Context: {context}\nExtra context: {extraContext}\n{name}: {chatin}\n{name}:", return_tensors="pt")
-    outputs = model.generate(inputs, max_length=1024, num_return_sequences=1, temperature=0.7)
-    message = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    # Get response from GPT
+    message = await generate_sentence(context)
     
-    # Append GPT-3 response to context
+    # Append GPT response to context
     context.append(f"{name}: {message}")
     context = context[-9:]
     
-    # Print GPT-3 response and what it said
+    # Print GPT response and what it said
     print(f"{name}: {chatin}")
     print(f"{name}: {message}")
     
@@ -326,5 +329,9 @@ async def get_compemote():
 @app.get("/actions")
 async def print_actions():
     return await print_actions()
+
+@app.get("/chatin")
+async def chatin(chatText: str = Query(chatText, description="Chat text.")):
+    return await main(chatText)
 
 main()
